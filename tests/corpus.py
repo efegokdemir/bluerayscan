@@ -426,6 +426,7 @@ APPLICATION_CODE = """import hashlib
 import jwt
 import random
 import requests
+import ssl
 import subprocess
 import yaml
 
@@ -434,6 +435,9 @@ DEBUG = True
 
 def fetch(url):
     return requests.get(url, verify=False)
+
+
+tls_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
 
 
 def issue():

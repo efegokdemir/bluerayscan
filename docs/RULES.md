@@ -584,6 +584,7 @@ somebody's note about the thing they decided not to do.
 | AP005 | Password hashed with a digest built for speed | medium |
 | AP006 | Shell command built from an interpolated value | critical for a request, otherwise high |
 | AP007 | JWT accepted with the "none" algorithm | critical |
+| AP008 | TLS minimum version is obsolete | high |
 
 Every other family reads configuration. This one reads code, which is a
 different proposition: configuration says what a system *is*, and code says
@@ -667,6 +668,12 @@ world calls the absence of a compression or a cipher, and a list of supported
 algorithms containing it is ordinary everywhere except here. The cost of that
 is the limit this family already has and states: an options object spread over
 several lines is invisible.
+
+AP008 flags explicit TLS 1.0 and TLS 1.1 minimum-version settings in Python,
+Go and Node. Those protocol versions have known weaknesses and are disabled by
+modern clients. The rule does not flag TLS 1.2 or newer, nor names such as
+TLSv1_2_method that do not set a minimum protocol version; those distinctions
+keep an obsolete-version check from becoming a broad search for the word TLS.
 
 What this rule does *not* read is PyJWT's `options={"verify_signature": False}`,
 and the reason is a measurement rather than a principle. It has one honest use
@@ -913,4 +920,3 @@ the mistake removed. It fires only for ports worth shouting about -- a server on
 443 open to the world is the point of it. DC002 is scoped the same way: mounting
 the project directory is how everyone develops, so only the paths that grant the
 host are reported, the container runtime socket chief among them.
-

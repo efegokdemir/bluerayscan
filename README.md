@@ -293,7 +293,7 @@ bluerayscan scan . --no-gitignore
 
 ## What it checks
 
-One hundred and forty-five rules across sixteen families. [docs/RULES.md](docs/RULES.md) is the
+One hundred and forty-six rules across sixteen families. [docs/RULES.md](docs/RULES.md) is the
 full list, with a paragraph on each family explaining what it is looking for
 and why; `bluerayscan rules` prints the same catalogue from the tool.
 
@@ -302,7 +302,7 @@ and why; `bluerayscan rules` prints the same catalogue from the tool.
 | [Secrets](docs/RULES.md#secrets) | SEC001–SEC054, SEC100–SEC101 | Credentials in any text file, including inside base64 |
 | [File names](docs/RULES.md#file-names) | FN001–FN004 | Key material and credential files, which have no text to read |
 | [Shell scripts](docs/RULES.md#shell-scripts-and-makefiles) | SH001–SH004 | Where `curl \| sh` actually lives |
-| [Application code](docs/RULES.md#application-code) | AP001–AP007 | Verification off, debug on, predictable tokens, unsafe loads, forgeable tokens |
+| [Application code](docs/RULES.md#application-code) | AP001–AP008 | Verification off, weak TLS, debug on, predictable tokens, unsafe loads, forgeable tokens |
 | [Dependencies](docs/RULES.md#dependencies) | SC001–SC004 | Where the rest of the build comes from, in nine manifests |
 | [GitHub Actions](docs/RULES.md#github-actions-workflows) | WF001–WF013 | Script injection, token scope, privileged triggers |
 | [GitLab CI](docs/RULES.md#gitlab-ci) | GL001–GL004 | The same injection class, and debug tracing |
