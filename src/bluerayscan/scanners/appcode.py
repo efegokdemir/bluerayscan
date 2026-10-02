@@ -86,6 +86,16 @@ _PHP_VERIFICATION_OFF = (
 )
 _RUBY_VERIFICATION_OFF = (re.compile(r"OpenSSL::SSL::VERIFY_NONE\b"),)
 
+# These are the explicit minimum-version spellings for protocols that are no
+# longer safe defaults. The patterns stay language-specific: minVersion means
+# something in Node TLS options, while the same name in another source file
+# would be a guess. TLS 1.2 and newer are intentionally not matched.
+_WEAK_TLS_VERSION = (
+    (re.compile(r"\bssl\.PROTOCOL_TLSv1(?:_1)?\b"), _PYTHON),
+    (re.compile(r"\bMinVersion\s*:\s*tls\.VersionTLS1(?:0|1)\b"), _GO),
+    (re.compile(r"\bminVersion\s*:\s*['\"]TLSv1\.(?:0|1)['\"]"), _JAVASCRIPT),
+)
+
 #: Django's settings module, Flask's runner, and the environment variable both
 #: of them read. A debug handler renders the stack, the local variables and
 #: often the settings object itself to whoever triggered the error.
@@ -261,6 +271,20 @@ _RULES = (
         "signs the endpoint and leave the mode at VERIFY_PEER.",
         hints=("verify_none",),
     ),
+    *(
+        _Rule(
+            "AP008", pattern, suffixes, Severity.HIGH,
+            "TLS minimum version is obsolete",
+            "TLS 1.0 and 1.1 have known weaknesses and are disabled by modern "
+            "clients. Require TLS 1.2 or newer, and keep the setting aligned "
+            "with the endpoint and its supported cipher suites.",
+            hints=(hint,),
+        )
+        for (pattern, suffixes), hint in zip(
+            _WEAK_TLS_VERSION,
+            ("protocol_tlsv1", "versiontls1", "minversion"),
+        )
+    ),
     _Rule(
         "AP002", _DEBUG_ON[0], _PYTHON, Severity.MEDIUM,
         "Debug mode is enabled",
@@ -366,6 +390,7 @@ _RULES = (
 #: a single pattern -- which is most files in most repositories.
 _HINTS = (
     "verif", "rejectunauthorized", "node_tls_reject", "check_hostname",
+    "protocol_tlsv1", "versiontls1", "minversion",
     "debug", "random", "rand(", "mt_rand", "yaml.load", "unserialize",
     "md5", "sha1", "sha256", "sha512", "exec", "system", "passthru",
     "popen", "subprocess", "jwt", "jsonwebtoken", "unsafeallownone",

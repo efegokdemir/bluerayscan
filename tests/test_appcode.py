@@ -26,6 +26,9 @@ class TestHints(unittest.TestCase):
         "InsecureSkipVerify: true": "main.go",
         "curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);": "a.php",
         "OpenSSL::SSL::VERIFY_NONE": "a.rb",
+        "ssl.PROTOCOL_TLSv1": "app.py",
+        "MinVersion: tls.VersionTLS10": "main.go",
+        "minVersion: 'TLSv1.1'": "a.js",
         "DEBUG = True": "settings.py",
         "app.run(debug=True)": "app.py",
         "yaml.load(body)": "app.py",
@@ -105,6 +108,33 @@ class TestVerificationOff(unittest.TestCase):
     def test_verification_left_on_is_not_a_finding(self):
         self.assertEqual(scan("app.py", "requests.get(url, verify=True)\n"), [])
         self.assertEqual(scan("client.js", "{ rejectUnauthorized: true }\n"), [])
+
+
+class TestWeakTlsVersion(unittest.TestCase):
+    def test_python_legacy_protocol_constants(self):
+        for line in ("ssl.PROTOCOL_TLSv1", "ssl.PROTOCOL_TLSv1_1"):
+            with self.subTest(line=line):
+                self.assertIn("AP008", rule_ids(scan("tls.py", line + "\n")))
+
+    def test_go_legacy_minimum_version(self):
+        for line in ("MinVersion: tls.VersionTLS10", "MinVersion: tls.VersionTLS11"):
+            with self.subTest(line=line):
+                self.assertIn("AP008", rule_ids(scan("tls.go", line + "\n")))
+
+    def test_node_legacy_minimum_version(self):
+        for line in ("minVersion: 'TLSv1.0'", 'minVersion: "TLSv1.1"'):
+            with self.subTest(line=line):
+                self.assertIn("AP008", rule_ids(scan("tls.js", line + "\n")))
+
+    def test_modern_versions_and_unrelated_method_names_are_not_reported(self):
+        for path, line in (
+            ("tls.py", "ssl.PROTOCOL_TLS_CLIENT"),
+            ("tls.go", "MinVersion: tls.VersionTLS12"),
+            ("tls.js", "minVersion: 'TLSv1.2'"),
+            ("tls.go", "tls.TLSv1_2_method"),
+        ):
+            with self.subTest(path=path, line=line):
+                self.assertNotIn("AP008", rule_ids(scan(path, line + "\n")))
 
 
 class TestDebugMode(unittest.TestCase):
